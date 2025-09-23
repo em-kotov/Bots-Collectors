@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEditor;
 
-[CustomEditor(typeof(PearlGenerator))]
+[CustomEditor(typeof(PearlSpawner))]
 public class PearlGeneratorEditor : Editor
 {
     public override void OnInspectorGUI()
@@ -9,7 +9,7 @@ public class PearlGeneratorEditor : Editor
         DrawDefaultInspector();
         EditorGUILayout.Space();
 
-        PearlGenerator pearlGenerator = (PearlGenerator)target;
+        PearlSpawner pearlGenerator = (PearlSpawner)target;
 
         if (GUILayout.Button("Spawn 1 Pearl"))
         {

@@ -10,6 +10,11 @@ public class PlayerCamera : MonoBehaviour
 
     private PlayerControls _playerControls;
 
+    private void OnEnable()
+    {
+        _playerControls.Enable();
+    }
+
     private void Awake()
     {
         _playerControls = new PlayerControls();
@@ -19,11 +24,6 @@ public class PlayerCamera : MonoBehaviour
     {
         Move(_playerControls.Camera.Move.ReadValue<Vector2>());
         Zoom(_playerControls.Camera.Zoom.ReadValue<float>());
-    }
-
-    private void OnEnable()
-    {
-        _playerControls.Enable();
     }
 
     private void OnDisable()

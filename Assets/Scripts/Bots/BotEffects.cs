@@ -21,12 +21,12 @@ public class BotEffects : MonoBehaviour
     {
         Color randomColor = Random.ColorHSV(0f, 1f, 0.8f, 1f, 0.8f, 1f);
 
-        MaterialPropertyBlock materialPropertyBlock = new MaterialPropertyBlock();
-        materialPropertyBlock.SetColor(s_baseColorId, randomColor);
+        MaterialPropertyBlock colorBlock = new MaterialPropertyBlock();
+        colorBlock.SetColor(s_baseColorId, randomColor);
 
         foreach (Renderer renderer in renderers)
         {
-            renderer.SetPropertyBlock(materialPropertyBlock);
+            renderer.SetPropertyBlock(colorBlock);
         }
     }
 }

@@ -1,16 +1,11 @@
 using UnityEngine;
-using TMPro;
 
-[RequireComponent(typeof(LineRenderer))]
-public class HomebaseEffects : MonoBehaviour
+public class ScanerEffects : MonoBehaviour
 {
     [Header("Scan Effect")]
     [SerializeField] private ParticleSystem _scanParticle;
     [SerializeField] private AudioSource _audioSource;
     [SerializeField] private AudioClip _scanClip;
-
-    [Header("Counter UI")]
-    [SerializeField] private TMP_Text _pearlCounter;
 
     [Header("Scan Radius")]
     [SerializeField] private LineRenderer _lineRenderer;
@@ -22,11 +17,6 @@ public class HomebaseEffects : MonoBehaviour
         _audioSource.PlayOneShot(_scanClip);
         _scanParticle.Stop();
         _scanParticle.Play();
-    }
-
-    public void UpdatePearlCounter(int pearlCount)
-    {
-        _pearlCounter.text = pearlCount.ToString();
     }
 
     public void SetScanRadius(float radius, float height)

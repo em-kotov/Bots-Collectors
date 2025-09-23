@@ -2,9 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PearlGenerator : MonoBehaviour
+public class PearlSpawner : Spawner<Pearl>
 {
-    [SerializeField] private Pearl _pearlPrefab;
     [SerializeField] private float _chance = 0.5f;
     [SerializeField] private float _spawnRate = 1.5f;
     [SerializeField] private float _radius = 5f;
@@ -13,11 +12,6 @@ public class PearlGenerator : MonoBehaviour
 
     private Coroutine _spawnRoutine;
     private HashSet<Pearl> _activePearls = new HashSet<Pearl>();
-
-    private void Start()
-    {
-        _spawnRoutine = StartCoroutine(SpawnPearls());
-    }
 
     private void OnEnable()
     {
@@ -36,15 +30,23 @@ public class PearlGenerator : MonoBehaviour
         }
     }
 
-    public void SpawnSinglePearl()
+    protected override void OnGet(Pearl item)
     {
         Vector3 randomOffset = Random.insideUnitSphere * _radius;
         Vector3 spawnPosition = transform.position + randomOffset;
         spawnPosition.y = _height;
 
-        Pearl pearl = Instantiate(_pearlPrefab, spawnPosition, Quaternion.identity);
-        pearl.PickedUp += OnPearlPickedUp;
-        _activePearls.Add(pearl);
+        base.OnGet(item);
+        SetItemPosition(item, spawnPosition);
+        item.Initialize();
+        item.PickedUp += OnPearlPickedUp;
+        item.ReadyToReturn += OnReadyToReturn;
+        _activePearls.Add(item);
+    }
+
+    public void SpawnSinglePearl()
+    {
+        Pool.Get();
     }
 
     private IEnumerator SpawnPearls()
@@ -60,6 +62,12 @@ public class PearlGenerator : MonoBehaviour
                 SpawnSinglePearl();
             }
         }
+    }
+
+    private void OnReadyToReturn(Pearl pearl)
+    {
+        pearl.ReadyToReturn -= OnReadyToReturn;
+        Pool.Release(pearl);
     }
 
     private void OnPearlPickedUp(Pearl pearl)
