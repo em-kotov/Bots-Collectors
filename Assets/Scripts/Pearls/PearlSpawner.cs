@@ -9,6 +9,7 @@ public class PearlSpawner : Spawner<Pearl>
     [SerializeField] private float _radius = 5f;
     [SerializeField] private float _height = 2f;
     [SerializeField] private int _maxCount = 20;
+    [SerializeField] private Vector3 _size = new Vector3(1, 1, 1);
 
     private Coroutine _spawnRoutine;
     private HashSet<Pearl> _activePearls = new HashSet<Pearl>();
@@ -67,6 +68,7 @@ public class PearlSpawner : Spawner<Pearl>
     private void OnReadyToReturn(Pearl pearl)
     {
         pearl.ReadyToReturn -= OnReadyToReturn;
+        pearl.transform.localScale = _size;
         Pool.Release(pearl);
     }
 

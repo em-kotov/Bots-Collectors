@@ -11,21 +11,34 @@ public class Bot : MonoBehaviour
    [SerializeField] private BotMover _mover;
 
    private Pearl _pearlSlot;
-   private Vector3 _basePosition;
+   private Vector3 _pearlStoragePosition;
+   private Vector3 _parkingPosition;
+   private bool _isAvailable = true;
 
    public Action<Bot, Pearl> HaveReturned;
    public Action<Bot> BecomeAvailable;
+   public Action<Bot> ReachedFlag;
 
    public void Initialize()
    {
-      transform.position = _basePosition;
+      _mover.SetBotTransform(transform);
       _effects.OverrideMaterialColor((Renderer[])GetRenderersInChildren());
+   }
+
+   public void AssignToFort(Vector3 storagePosition)
+   {
+      _pearlStoragePosition = storagePosition;
       NotifyAvailable();
    }
 
-   public void SetBasePosition(Vector3 position)
+   public void SetParkingPosition(Vector3 position)
    {
-      _basePosition = position;
+      _parkingPosition = position;
+
+      if (_isAvailable)
+      {
+         _mover.GoToPosition(_parkingPosition);
+      }
    }
 
    public void Collect(Pearl targetPearl)
@@ -33,29 +46,48 @@ public class Bot : MonoBehaviour
       StartCoroutine(CollectRoutine(targetPearl));
    }
 
+   public void GoToFlag(Flag flag, Fort original)
+   {
+      StartCoroutine(BuildFort(flag, original));
+   }
+
    private IEnumerator CollectRoutine(Pearl targetPearl)
    {
-      _mover.MoveToTarget(transform, targetPearl.transform.position);
+      _isAvailable = false;
+      _mover.GoToTransform(targetPearl.transform);
 
-      yield return new WaitUntil(() => _mover.IsEnoughClose(transform.position, targetPearl.transform.position) == true);
+      yield return new WaitUntil(() => _mover.HasReachedTarget);
 
       _pearlSlot = targetPearl;
       AttachResource(_pearlSlot, _holdPoint, false, Vector3.zero, false, true);
       _pearlSlot.NotifyPickedUp();
       _effects.PlayPickupEffect(transform.position);
 
-      _mover.MoveToTarget(transform, _basePosition);
+      _mover.GoToPosition(_parkingPosition);
 
-      yield return new WaitUntil(() => _mover.IsEnoughClose(transform.position, _basePosition) == true);
+      yield return new WaitUntil(() => _mover.HasReachedTarget);
 
       if (_pearlSlot != null)
       {
-         AttachResource(_pearlSlot, null, true, _basePosition, false, false);
+         AttachResource(_pearlSlot, null, true, _pearlStoragePosition, false, false);
          HaveReturned?.Invoke(this, _pearlSlot);
       }
 
-      NotifyAvailable();
       _pearlSlot = null;
+      _isAvailable = true;
+      NotifyAvailable();
+   }
+
+   private IEnumerator BuildFort(Flag flag, Fort original)
+   {
+      _isAvailable = false;
+      _mover.GoToTransform(flag.transform);
+
+      yield return new WaitUntil(() => _mover.HasReachedTarget);
+
+      flag.CreateFort(original, this);
+      ReachedFlag?.Invoke(this);
+      _isAvailable = true;
    }
 
    private void AttachResource(Pearl pearl, Transform parentPosition, bool isWorldPositionStays, Vector3 localPosition,
@@ -74,7 +106,10 @@ public class Bot : MonoBehaviour
 
    private void NotifyAvailable()
    {
-      BecomeAvailable?.Invoke(this);
+      if (_isAvailable)
+      {
+         BecomeAvailable?.Invoke(this);
+      }
    }
 
 #if UNITY_EDITOR
